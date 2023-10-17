@@ -1,0 +1,47 @@
+#include <Adafruit_NeoPixel.h>
+#define PIN            6
+#define NUMPIXELS      16
+int pometer = A0;
+
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+
+void setup() {
+  pinMode(pometer, INPUT);
+  pixels.begin();
+  pixels.show();
+  Serial.begin(9600);
+}
+
+void loop() {
+  int brightnessValue = analogRead(pometer);
+  int brightness = map(brightnessValue, 0, 1023, 0, 255);
+  pixels.setBrightness(brightness);
+  Serial.println(brightness);
+  rainbow(20); // 속도 조절을 위해 인수(단위: 밀리초)를 조절할 수 있습니다.
+}
+
+// 무지개 효과를 만드는 함수
+void rainbow(int wait) {
+  int i, j;
+  for (j = 0; j < 256; j++) {
+    for (i = 0; i < pixels.numPixels(); i++) {
+      pixels.setPixelColor(i, Wheel((i + j) & 255));
+    }
+    pixels.show();
+    delay(20);
+  }
+}
+
+// 8비트 RGB 색상 값을 24비트 색상 값으로 변환
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85) {
+    return pixels.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if (WheelPos < 170) {
+    WheelPos -= 85;
+    return pixels.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return pixels.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
